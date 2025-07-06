@@ -1,0 +1,19 @@
+- name: Install K3s in server mode (no K3S_URL)
+  shell: |
+    curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION="{{ k3s_version }}" \
+    K3S_TOKEN="{{ k3s_token }}" sh -s - server --write-kubeconfig-mode 644
+  args:
+    creates: /usr/local/bin/k3s
+
+- name: Wait for kubeconfig
+  wait_for:
+    path: /etc/rancher/k3s/k3s.yaml
+    timeout: 60
+
+- name: Show K3s version
+  command: k3s --version
+  register: version
+
+- debug:
+    var: version.stdout
+

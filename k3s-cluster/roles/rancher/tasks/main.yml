@@ -1,0 +1,17 @@
+- name: Install Helm
+  shell: |
+    curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+  args:
+    creates: /usr/local/bin/helm
+
+- name: Create cattle-system namespace
+  command: kubectl create namespace cattle-system
+  register: ns_result
+  failed_when: ns_result.rc != 0 and "AlreadyExists" not in ns_result.stderr
+
+- name: Install Cert Manager
+  include_tasks: cert-manager.yml
+
+- name: Install Rancher
+  include_tasks: rancher.yml
+

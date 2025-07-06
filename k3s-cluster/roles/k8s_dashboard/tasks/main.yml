@@ -1,0 +1,35 @@
+- name: Set KUBECONFIG path
+  set_fact:
+    kubeconfig_path: /etc/rancher/k3s/k3s.yaml
+
+- name: Add Kubernetes Dashboard Helm repository
+  command: helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  register: add_repo
+  changed_when: "'\"kubernetes-dashboard\" has been added' in add_repo.stdout"
+
+- name: Update Helm repositories
+  command: helm repo update
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+
+- name: Deploy Kubernetes Dashboard via Helm
+  command: >
+    helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard
+    --create-namespace
+    --namespace kubernetes-dashboard
+    --set service.type=NodePort
+    --set service.nodePort=31000
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+
+- name: Wait for Kubernetes Dashboard to be ready
+  shell: |
+    kubectl -n kubernetes-dashboard rollout status deployment/kubernetes-dashboard-web
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+
+- name: Create admin-user and ClusterRoleBinding
+  include_tasks: create_admin_user.yml
+

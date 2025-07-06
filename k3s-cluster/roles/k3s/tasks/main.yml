@@ -1,0 +1,3 @@
+- name: Include role-specific task
+  include_tasks: "{{ k3s_role }}.yml"
+

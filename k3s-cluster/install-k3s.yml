@@ -1,0 +1,16 @@
+- name: Install K3s server
+  hosts: k3s_server
+  become: yes
+  roles:
+    - role: k3s
+      vars:
+        k3s_role: server
+
+- name: Install K3s agent
+  hosts: k3s_agent
+  become: yes
+  roles:
+    - role: k3s
+      vars:
+        k3s_role: agent
+

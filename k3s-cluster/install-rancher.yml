@@ -1,0 +1,6 @@
+- name: Install Rancher on K3s
+  hosts: k3s_server
+  become: yes
+  roles:
+    - rancher
+

@@ -1,0 +1,8 @@
+k3s_version: v1.32.5+k3s1 
+k3s_token: "d76bc21085e2d4251fdc1323c311d49702f5dbc4"
+k3s_server_url: "https://192.168.102.19:6443" 
+
+rancher_hostname: rancher.localhost
+rancher_bootstrap_password: admin
+cert_manager_version: v1.18.1
+

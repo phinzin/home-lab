@@ -1,0 +1,36 @@
+- name: Install cert-manager CRDs if not already applied
+  command: kubectl apply -f https://github.com/jetstack/cert-manager/releases/latest/download/cert-manager.crds.yaml
+  args:
+    creates: /etc/kubernetes/cert-manager-crds-applied
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Set KUBECONFIG environment variable
+  ansible.builtin.set_fact:
+    kubeconfig_path: /etc/rancher/k3s/k3s.yaml
+
+- name: Add cert-manager Helm repo
+  command: helm repo add jetstack https://charts.jetstack.io
+  register: cm_repo
+  changed_when: "'\"jetstack\" has been added' in cm_repo.stdout"
+
+- name: Update Helm repos
+  command: helm repo update
+
+- name: Install cert-manager chart
+  command: >
+    helm upgrade --install cert-manager jetstack/cert-manager
+    --namespace cert-manager
+    --create-namespace
+    --version {{ cert_manager_version }}
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  args:
+    creates: /etc/kubernetes/cert-manager-installed  # optional, use your own marker file if needed
+
+- name: Wait for cert-manager pods
+  shell: |
+    kubectl wait --namespace cert-manager --for=condition=Available --timeout=120s deployment/cert-manager
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+
